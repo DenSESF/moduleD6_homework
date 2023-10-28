@@ -1,1 +1,1 @@
-# Module D2, NewsPaper. Django models
+# Module D, NewsPaper. Django models, templates, views
