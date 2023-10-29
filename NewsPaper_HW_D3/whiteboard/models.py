@@ -18,6 +18,9 @@ class Author(models.Model):
         if self.user.comment_set.all().exists():
             self.rating += self.user.comment_set.all().aggregate(rSum=Sum('rating')).get('rSum')
         self.save()
+    
+    def __str__(self):
+        return self.user.get_full_name()
 
 class Category(models.Model):
     name = models.CharField(max_length=32, unique=True)
@@ -34,6 +37,9 @@ class Post(models.Model):
     text = models.TextField()
     rating = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.header
+
     def like(self):
         self.rating += 1
         self.save()
@@ -43,6 +49,9 @@ class Post(models.Model):
 
     def preview(self):
         return self.text if len(self.text) < 124 else self.text[:124] + '...'
+    
+    class Meta:
+        ordering = ('-time',)
 
 class PostCategory(models.Model):
     post = models.ForeignKey(Post, on_delete = models.CASCADE)

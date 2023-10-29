@@ -11,7 +11,9 @@ class NewsList(ListView):
     model = Post
     template_name = 'news/news.html'
     context_object_name = 'news'
-    queryset = Post.objects.filter(type=Post.NEWS).order_by('-time')
+    # queryset = Post.objects.filter(type=Post.NEWS).order_by('-time')
+    # перенес сортировку по убыванию в модели
+    queryset = Post.objects.filter(type=Post.NEWS)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -26,5 +28,7 @@ class NewsDetail(DetailView):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context['full_name'] = self.object.author.user.get_full_name()
+        # context['full_name'] = self.object.author.user.get_full_name()
+        # Переопределил метод __str__ в модели
+        context['full_name'] = self.object.author
         return context
