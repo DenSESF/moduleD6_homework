@@ -1,2 +1,4 @@
-# Module D, NewsPaper.
-## Django models, templates, views, custom filters
+
+# Module D4, Project_Mac
+
+Filters, forms, paginator django
