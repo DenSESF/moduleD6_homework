@@ -18,12 +18,12 @@ from .filters import ProductFilter
 class ProductsList(ListView):
     model = Product
     template_name = 'fastfood/products.html'
-    context_object_name = 'products'
+    # context_object_name = 'products'
     # В листинге в юните D4.3 этой строки нет
     form_class = ProductForm 
     # queryset = Product.objects.order_by('price')
     ordering = ['-price']
-    # paginate_by = 1
+    paginate_by = 1
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

@@ -9,7 +9,8 @@ Products
     <h1><span class="fas fa-hamburger"></span> Все продукты</h1>
     <hr>
     {% comment %} <h3>{{ time_now|date:'M d Y' }} {{ value1|default_if_none:'ничего' }} {{ value2.field1 }}</h3> {% endcomment %}
-    {% if products %}
+    {% comment %} {% if products %} {% endcomment %}
+    {% if filter.qs %}
         <form class="row row-cols-auto my-2" method="GET">
             {{ filter.form }}
             <input class="btn btn-info btn-sm mx-1 my-auto" type="submit" value="Найти">
