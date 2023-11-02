@@ -1,4 +1,4 @@
 
-# Module D4, Project_Mac
+# Module D4, NewsPaper
 
 Filters, forms, paginator django
