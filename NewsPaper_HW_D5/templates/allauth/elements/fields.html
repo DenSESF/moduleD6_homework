@@ -1,0 +1,11 @@
+{% load custom_filters %}
+{% comment %} {{ attrs.form.as_div }} {% endcomment %}
+
+{% if attrs.form.errors %}
+    <div class="text-danger my-3">{{ attrs.form.errors.as_text|RegExError }}</div>
+{% endif %}
+{% for field in attrs.form %}
+    <label class="form-label my-auto col-12" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.help_text %}<div class="helptext">{{ field.help_text|safe }}</div>{% endif %}
+{% endfor %}

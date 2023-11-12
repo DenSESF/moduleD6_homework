@@ -1,0 +1,68 @@
+{% extends 'default.html' %}
+{% load custom_tags %}
+
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+    {% if news %}
+        <h2><span class="fas fa-globe"></span> {{ title }}</h2>
+    {% elif news_search %}
+        <h2><span class="fas fa-search"></span> {{ title }}</h2>
+    {% endif %}
+    <hr>
+    <div class="row justify-content-center">
+        <div class="col-6 my-auto">
+            <p class="text-start fs-5 my-auto">Всего новостей: {% firstof news_count filter.qs|length "0" %}</p>
+        </div>
+        <div class="col-6 my-auto">
+            {% time_now as current_time %}
+            <p class="text-end fs-5 my-auto">{{ current_time|date:'d.m.Y H:i:s' }}</p>
+        </div>
+    </div>
+    {% if not news %}
+        <form class="row row-cols-auto my-2" method="GET">
+            {% comment %} {{ filter.form }} {% endcomment %}
+            {% for field in filter.form %}
+                <label class="form-label my-auto" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field.errors }}{{ field }}
+            {% endfor %}
+            <input class="btn btn-info btn-sm mx-1 my-auto" type="submit" value="Найти">
+        </form>
+    {% endif %}
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Заголовок</th>
+                <th scope="col">Дата</th>
+                <th scope="col">Содержимое</th>
+                <th scope="col">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if news %}
+            {% for oneNews in news %}
+                {% include 'news/parts/news_tbody.html' %}
+            {% endfor %}
+        {% elif news_search %}
+            {% for oneNews in news_search %}
+                {% include 'news/parts/news_tbody.html' %}
+            {% endfor %}
+        {% endif %}
+        {% if not news_search and not news %}
+            <tr>
+                <td colspan="4"><p class="fs-5 my-auto">Новостей нет</p></td>
+            </tr>
+        {% endif %}
+            </tbody>
+        </table>
+        <div class="row justify-content-center pb-5">
+            <div class="col-6 my-auto">
+                {% if news or news_search%}
+                    {% include 'news/parts/paginator.html' %}
+                {% endif %}
+            </div>
+            <div class="col-6 my-auto text-end">
+                <a class="btn btn-success btn-sm" href="{% url 'news:news_add' %}">Добавить <span class="fas fa-plus"></span></a>
+            </div>
+        </div>
+{% endblock content %}
