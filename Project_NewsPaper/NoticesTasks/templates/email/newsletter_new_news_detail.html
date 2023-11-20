@@ -1,0 +1,53 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ header|Censor }}</title>
+    <style type="text/css">
+        *, ::before, ::after {
+            box-sizing: border-box;
+          }
+    </style>
+</head>
+<body style="margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', 'Liberation Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; line-height: 1.5;">   
+    <div style="padding-top: 3rem !important; 
+padding-bottom: 3rem !important; max-width: 1320px; margin-right: auto; margin-left: auto; padding-right: calc(1.5rem * 0.5);
+padding-left: calc(0rem * 0.5);">
+        <div style="padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important; display: flex; justify-content: center !important; flex-wrap: wrap; margin-top: calc(-1 * 0rem); margin-right: calc(-0.5 * 1.5rem); margin-left: calc(-0.5 * 1.5rem);">
+            <div style="flex: 0 0 auto; width: 83.33333333%; max-width: 100%; padding-right: calc(1.5rem * 0.5); padding-left: calc(1.5rem * 0.5); margin-top: 0rem;">
+                <p style="font-size: 1.25rem !important; text-align: left !important; margin-top: 0; margin-bottom: 1rem;">
+                    {% if username %}
+                        Здравствуй, {{ username }}. Новая статья в твоём любимом разделе!                    
+                    {% elif category_names %}
+                        Появилась свежая новость в категории: {{ category_names }}.
+                    {% endif %}
+                </p>
+                <hr>
+                <h3 style="text-align: center !important; font-size: 2rem; margin-top: 0; margin-bottom: 0.5rem; font-weight: 500; line-height: 1.2;">{{ header|Censor }}</h3>
+            </div>
+        </div>
+        <div style="padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important; display: flex; justify-content: center !important; flex-wrap: wrap; margin-top: calc(-1 * 0rem); margin-right: calc(-0.5 * 1.5rem); margin-left: calc(-0.5 * 1.5rem);">
+            <div style="flex: 0 0 auto; width: 41.66666667%; max-width: 100%; padding-right: calc(1.5rem * 0.5); padding-left: calc(1.5rem * 0.5); margin-top: 0rem;"><p style="margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; text-align: left !important;">{{ author }}</p></div>
+            <div style="flex: 0 0 auto; width: 41.66666667%; max-width: 100%; padding-right: calc(1.5rem * 0.5); padding-left: calc(1.5rem * 0.5); margin-top: 0rem;"><p style="margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; text-align: right !important;">{% now 'd-m-Y' %}</p></div>
+        </div>
+        <div style="padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important; display: flex; justify-content: center !important; flex-wrap: wrap; margin-top: calc(-1 * 0rem); margin-right: calc(-0.5 * 1.5rem); margin-left: calc(-0.5 * 1.5rem);">
+            <div style="flex: 0 0 auto; width: 83.33333333%; max-width: 100%; padding-right: calc(1.5rem * 0.5); padding-left: calc(1.5rem * 0.5); margin-top: 0rem;">
+                <p style="text-indent: 1em; text-align: justify; font-size: 1.25rem; font-weight: 300; margin-top: 0; margin-bottom: 1rem;">
+                    {% if username %}
+                        {{ text|Censor|truncatechars:50 }}
+                    {% elif category_names %}
+                        {{ text|Censor|truncatewords:20 }}
+                    {% endif %}
+                    &nbsp;<a href="http://127.0.0.1:8000/{{ url }}">продолжить чтение</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

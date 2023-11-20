@@ -1,0 +1,32 @@
+{% extends 'default.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ newsDelete.header }}{% endblock title %}
+
+{% block content %}
+    <div class="row justify-content-center py-2">
+        <div class="col-10">
+            <h1 class="text-center text-danger">Удалить новость?</h1>
+        </div>
+    </div>
+    <div class="row justify-content-center py-2">
+        <div class="col-10">
+            <h2 class="text-center">{{ newsDelete.header|Censor }}</h2>
+        </div>
+    </div>
+    <div class="row justify-content-center py-2">
+        <div class="col-5"><p class="text-start my-1">{{ newsDelete.author }}</p></div>
+        <div class="col-5"><p class="text-end my-1">{{ newsDelete.time|date:'d-m-Y H:i' }}</p></div>
+    </div>
+    <div class="row justify-content-center py-2">
+        <div class="col-10"><p class="lead" style="text-indent: 1em; text-align: justify;">{{ newsDelete.text|Censor }}</p></div>
+    </div>
+    <div class="row justify-content-center pt-2 pb-5">
+        <div class="col-10">
+            <form method="POST" class="text-end">
+                {% csrf_token %}
+                <button class="btn btn-danger btn-sm" type="submit">Удалить <span class="far fa-trash-alt"></span></button>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

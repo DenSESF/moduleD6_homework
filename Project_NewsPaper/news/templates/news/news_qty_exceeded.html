@@ -1,0 +1,22 @@
+{% extends 'default.html' %}
+
+{% block title %}Превышено количество публикаций{% endblock title %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-10">
+        <h2 class="text-center">Превышено количество публикаций</h2>
+    </div>
+</div>
+<div class="row justify-content-center py-2">
+    <div class="col-5"><p class="text-start my-1">{{ request.user }}</p></div>
+    <div class="col-5"><p class="text-end my-1">{% now 'd-m-Y H:i' %}</p></div>
+</div>
+<div class="row justify-content-center py-2">
+    <div class="col-10">
+        <p class="lead" style="text-indent: 1em; text-align: justify;">
+            Разрешенное количество пубилкаций новостей в сутки - <b>три</b>. Удалите одну из новостей или дождитесь следующего дня.
+        </p>
+    </div>
+</div>
+{% endblock content %}

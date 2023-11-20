@@ -1,0 +1,189 @@
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.urls import reverse_lazy
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
+from django.views.generic.base import TemplateView
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
+
+from typing import Any
+
+from whiteboard.models import Post, Category, Author
+from .filters import NewsFilter
+from .forms import NewsForm
+
+from django.utils import timezone
+
+from NoticesTasks.scheduler import bg_notice_create_new_post
+
+
+class NewsList(ListView):
+    # model = Post
+    template_name = 'news/news.html'
+    context_object_name = 'news'
+    # queryset = Post.objects.filter(type=Post.NEWS).order_by('-time')
+    # ordering = ['-time']
+    # перенес сортировку по убыванию даты в модели
+    queryset = Post.objects.filter(type=Post.NEWS)
+    paginate_by = 10
+
+    @staticmethod
+    def valid_category(cat_id):
+        return cat_id.isnumeric() and Category.objects.filter(pk=cat_id).exists()
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Новости'
+        context['news_count'] = self.get_queryset().count()
+        category = self.request.GET.get('cat')
+        if category is not None and self.valid_category(category):
+            context['all_news_radio'] = 'disabled'
+            context['current_category_id'] = self.request.GET.get('cat')
+        else:
+            context['all_news_radio'] = 'checked'
+        context['is_not_author'] = not self.request.user.groups.filter(
+            name='authors'
+        ).exists()
+        return context
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # if self.request.GET.__contains__('cat'):
+        if self.request.GET.get('cat') is not None:
+            category = self.request.GET.get('cat')
+            if self.valid_category(category):
+                return queryset.filter(category=category)
+        return queryset
+
+
+class NewsSearch(ListView):
+    model = Post
+    template_name = 'news/news.html'
+    context_object_name = 'news_search'
+    # queryset = Post.objects.filter(type=Post.NEWS)
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Поиск новостей'
+        context['filter'] = self.filterset
+        context['is_not_author'] = not self.request.user.groups.filter(
+            name='authors'
+        ).exists()
+        return context
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        self.filterset = NewsFilter(self.request.GET, queryset=queryset)
+        return self.filterset.qs
+
+
+class NewsDetail(DetailView):
+    model = Post
+    template_name = 'news/news_detail.html'
+    context_object_name = 'newsDetail'
+
+    # def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    #     context = super().get_context_data(**kwargs)
+        # context['full_name'] = self.object.author.user.get_full_name()
+        # Переопределил метод __str__ в модели
+        # return context
+
+
+class NewsAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+    permission_required = (
+        'whiteboard.add_post',
+    )
+    template_name = 'news/news_add.html'
+    form_class = NewsForm
+
+    def get(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        if Author.objects.filter(user=request.user).exists():
+            author = Author.objects.get(user=self.request.user)
+            today_day = timezone.now().day
+            count_post = Post.objects.filter(
+                time__day=today_day,
+                author=author,
+                type=Post.NEWS,
+            ).count()
+            if count_post == 3:
+                return HttpResponseRedirect(reverse_lazy('news:news_qty_exceeded'))
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Добавить новость'
+        return context
+
+    # def get_initial(self, *args, **kwargs):
+    #     initial = super(NewsAddView, self).get_initial(**kwargs)
+    #     initial['type'] = Post.NEWS
+    #     return initial
+    
+    def form_valid(self, form):
+        fields = form.save(commit=False)
+        if Author.objects.filter(user=self.request.user).exists():
+            fields.author = Author.objects.get(user=self.request.user)
+        else:
+            fields.author = Author.objects.create(user=self.request.user)
+        fields.type = Post.NEWS
+        fields.save()
+        form.save_m2m()
+        '''
+        Запуск задачи на отправку уведомлений о создании новой новости.
+        Сигнал post_save не получает связи с таблицей подписчиков категорий
+        т.к. она еще не создана.
+        Сигнал m2m_change срабатывает при любом изменении полей категории,
+        невозможно понять пост только создан или же он уже существовал.
+        поэтому реализация в виде фонового планировщика.
+        '''
+        bg_notice_create_new_post(fields)
+        return HttpResponseRedirect(fields.get_absolute_url())
+    
+    # def post(self, request, *args, **kwargs):
+    #     form = self.form_class(request.POST)
+    #     if form.is_valid():
+    #         fields = form.save(commit=False)
+    #         if fields.type != Post.NEWS:
+    #             fields.type = Post.NEWS
+    #         fields.save()
+    #         form.save_m2m()
+    #     return super().post(request, *args, **kwargs)
+
+
+class NewsQtyExceeded(TemplateView):
+    template_name = 'news/news_qty_exceeded.html'
+
+
+class NewsEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    permission_required = (
+        'whiteboard.change_post',
+    )
+    template_name = 'news/news_add.html'
+    form_class = NewsForm
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Редактировать новость'
+        return context
+
+    def get_object(self, **kwargs):
+        id = self.kwargs.get('pk')
+        return Post.objects.get(pk=id)
+
+
+class NewsDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    permission_required = (
+        'whiteboard.delete_post',
+    )
+    template_name = 'news/news_delete.html'
+    context_object_name = 'newsDelete'
+    queryset = Post.objects.all()
+    success_url = reverse_lazy('news:news')

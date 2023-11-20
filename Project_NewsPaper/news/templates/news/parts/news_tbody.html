@@ -1,0 +1,11 @@
+{% load custom_filters %}
+<tr>
+    <td><a href="/news/{{ oneNews.id }}">{{ oneNews.header|truncatechars:40|Censor }}</a></td>
+    <td>{{ oneNews.time|date:'d-m-Y H:i' }}</td>
+    <td>{{ oneNews.text|truncatechars:50|Censor }}</td>
+    {% comment %} <td>{{ oneNews.text|truncatewords:20 }}</td> {% endcomment %}
+    <td>
+        <a class="btn btn-success btn-sm" href="{% url 'news:news_edit' oneNews.id %}">Редактировать <span class="far fa-edit"></span></a>
+        <a class="btn btn-danger btn-sm" href="{% url 'news:news_delete' oneNews.id %}">Удалить <span class="far fa-trash-alt"></span></a>
+    </td>
+</tr>
