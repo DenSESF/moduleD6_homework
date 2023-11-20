@@ -198,3 +198,6 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER + config('EMAIL_DOMAIN')
 # Для apschedulet
 APSCHEDULER_DATETIME_FORMAT = 'N j, Y, f:s a'
 APSCHEDULER_RUN_NOW_TIMEOUT = 25 # seconds
+
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -54,7 +54,7 @@ def bl_notice_tasks_scheduler():
         trigger=CronTrigger(
             day_of_week="mon",
             # hour="10",
-            # minute="*/1",
+            minute="*/1",
         ),
         id="week_notice_add_new_post",
         max_instances=1,

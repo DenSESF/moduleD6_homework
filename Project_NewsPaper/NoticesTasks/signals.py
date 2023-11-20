@@ -39,7 +39,7 @@ def notify_add_new_news(sender, instance, action, reverse, pk_set, *args, **kwar
                     subject=context['header'],
                     body=context['text'],
                     from_email=DEFAULT_FROM_EMAIL,
-                    to=[recipient],
+                    to=[recipient,],
                     connection=connection,
                 )
                 msg.attach_alternative(html_context, 'text/html')
