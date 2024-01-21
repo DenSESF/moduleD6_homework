@@ -27,13 +27,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-]
+# ALLOWED_HOSTS = [
+#     '127.0.0.1',
+#     'localhost',
+# ]
 
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default=['127.0.0.1', 'localhost'],
+    cast=lambda v: v.split(';'),
+)
 
 # Application definition
 
@@ -179,7 +184,6 @@ ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm',
 }
 
-
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/news/'
 
@@ -193,7 +197,12 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 # Используем ssl
 EMAIL_USE_SSL = True
 # адрес почты отправителя
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER + config('EMAIL_DOMAIN')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER + config('EMAIL_DOMAIN', default='')
+
+# список всех админов в формате ('имя', 'их почта')
+ADMINS = config(
+    'ADMINS', cast=lambda v: [tuple(s.split(',')) for s in v.split('_')]
+)
 
 # Для apschedulet
 APSCHEDULER_DATETIME_FORMAT = 'N j, Y, f:s a'
