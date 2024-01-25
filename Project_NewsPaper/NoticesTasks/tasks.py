@@ -1,3 +1,4 @@
+# flake8: noqa E501
 from django_apscheduler.models import DjangoJobExecution
 
 from django.contrib.auth.models import User
@@ -10,14 +11,20 @@ from NewsPaper.settings import DEFAULT_FROM_EMAIL
 from django.core.mail import  EmailMultiAlternatives, get_connection
 from django.template.loader import render_to_string
 
+
 def delete_old_job_executions(max_age=604_800):
-    """This job deletes all apscheduler job executions older than `max_age` from the database."""
+    """
+        This job deletes all apscheduler job executions older
+        than `max_age` from the database.
+    """
     DjangoJobExecution.objects.delete_old_job_executions(max_age)
+
 
 def testing_job(message=None):
     if message is not None:
         print(message)
     print(f'Job is done, scheduler work. {timezone.now().ctime()}')
+
 
 def now_notice_create_post(fields):
     subscriber_users = fields.category.values_list(

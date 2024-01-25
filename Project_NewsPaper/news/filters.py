@@ -12,8 +12,8 @@ from whiteboard.models import Post, Author
 class NewsFilter(FilterSet):
     author = ModelChoiceFilter(
         lookup_expr='exact',
-        label = 'Автор',
-        queryset = Author.objects.all(),
+        label='Автор',
+        queryset=Author.objects.all(),
         widget=forms.Select(attrs={'class': 'form-select-sm'})
     )
     header = CharFilter(
@@ -21,10 +21,11 @@ class NewsFilter(FilterSet):
         label='Заголовок содержит',
         widget=forms.TextInput(attrs={'class': 'form-control-sm'})
     )
-    time = IsoDateTimeFilter( # было DateFilter
+    # было DateFilter
+    time = IsoDateTimeFilter(
         lookup_expr='lt',
         label='Дата позже',
-        widget = forms.TextInput(attrs={
+        widget=forms.TextInput(attrs={
             'class': 'form-control-sm',
             'type': 'date',
             }
@@ -34,7 +35,7 @@ class NewsFilter(FilterSet):
     class Meta():
         model = Post
         fields = ['header', 'time', 'author', ]
-    
+
     @property
     def qs(self):
         parent = super().qs

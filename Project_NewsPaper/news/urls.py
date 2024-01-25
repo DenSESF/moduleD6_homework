@@ -18,5 +18,5 @@ urlpatterns = [
     path('add/', NewsAddView.as_view(), name='news_add'),
     path('<int:pk>/edit/', NewsEditView.as_view(), name='news_edit'),
     path('<int:pk>/delete/', NewsDeleteView.as_view(), name='news_delete'),
-    path('qty_exceeded/', NewsQtyExceeded.as_view(), name='news_qty_exceeded'),
+    path('qty_exceeded/', NewsQtyExceeded.as_view(), name='news_qty_exced'),
 ]

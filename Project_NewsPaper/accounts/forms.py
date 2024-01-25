@@ -16,13 +16,12 @@ class CustomLoginForm(LoginForm):
         )
     password.widget = password_widget
     error_messages = {
-        'account_inactive': 'Этот аккаунт в настоящее время неактивен.',
-        'email_password_mismatch': 
-            'Некорректный адрес электронной почты или пароль.'
-        ,
-        'username_password_mismatch': 
-            'Некорректное имя пользователя или пароль.'
-        ,
+        'account_inactive':
+            'Этот аккаунт в настоящее время неактивен.',
+        'email_password_mismatch':
+            'Некорректный адрес электронной почты или пароль.',
+        'username_password_mismatch':
+            'Некорректное имя пользователя или пароль.',
     }
 
     def __init__(self, *args, **kwargs):
@@ -36,7 +35,10 @@ class CustomLoginForm(LoginForm):
                 'autocomplete': 'email',
             }
         )
-        login_field = forms.EmailField(label='Электронная почта', widget=login_widget)
+        login_field = forms.EmailField(
+            label='Электронная почта',
+            widget=login_widget,
+        )
         self.fields['login'] = login_field
         set_form_field_order(self, ['login', 'password'])
         self.fields['password'].help_text = mark_safe(
@@ -46,7 +48,7 @@ class CustomLoginForm(LoginForm):
 
 
 class CustomSignupForm(SignupForm):
-    
+
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(CustomSignupForm, self).__init__(*args, **kwargs)

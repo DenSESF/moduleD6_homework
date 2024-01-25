@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+# flake8: noqa E501
 from pathlib import Path
 
 import os
@@ -51,11 +52,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # редирект
     'django.contrib.redirects',
-    
+
     # Нужно для allauth
     'django.contrib.sites',
 
     # Сторонние приложения
+    'debug_toolbar',
     'django_filters',
     'allauth',
     'allauth.account',
@@ -83,6 +85,7 @@ MIDDLEWARE = [
     'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
     # Нужно для allauth
     'allauth.account.middleware.AccountMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'NewsPaper.urls'
@@ -206,7 +209,10 @@ ADMINS = config(
 
 # Для apschedulet
 APSCHEDULER_DATETIME_FORMAT = 'N j, Y, f:s a'
-APSCHEDULER_RUN_NOW_TIMEOUT = 25 # seconds
+APSCHEDULER_RUN_NOW_TIMEOUT = 25  # seconds
 
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    INTERNAL_IPS = [
+        '127.0.0.1',
+    ]

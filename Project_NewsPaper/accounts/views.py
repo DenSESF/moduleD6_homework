@@ -9,11 +9,12 @@ from whiteboard.models import Category
 
 @login_required
 def join_authors(request):
-   user = request.user
-   authors_group = Group.objects.get(name='authors')
-   if not request.user.groups.filter(name='authors').exists():
-       authors_group.user_set.add(user)
-   return redirect('news:news')
+    user = request.user
+    authors_group = Group.objects.get(name='authors')
+    if not request.user.groups.filter(name='authors').exists():
+        authors_group.user_set.add(user)
+    return redirect('news:news')
+
 
 @login_required
 def subscribe_category(request):

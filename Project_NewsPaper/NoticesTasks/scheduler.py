@@ -24,7 +24,7 @@ logging.getLogger('apscheduler').setLevel(logging.WARNING)
 
 def bg_notice_create_new_post(fields):
     scheduler = BackgroundScheduler(timezone=settings.TIME_ZONE)
-  
+
     scheduler.add_job(
         now_notice_create_post,
         args=[fields]
@@ -38,11 +38,10 @@ def bg_notice_create_new_post(fields):
 def bl_notice_tasks_scheduler():
     scheduler = BlockingScheduler(timezone=settings.TIME_ZONE)
     scheduler.add_jobstore(DjangoJobStore(), "default")
-    
+
     scheduler.add_job(
         testing_job,
-        trigger=CronTrigger(minute="*/5"
-        ),
+        trigger=CronTrigger(minute="*/5"),
         id="testing_job",  # The `id` assigned to each job MUST be unique
         max_instances=1,
         replace_existing=True,

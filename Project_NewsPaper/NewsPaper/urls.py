@@ -24,4 +24,5 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('join_the_authors/', join_authors, name='join_authors'),
     path('subscribe_category/', subscribe_category, name='subscrybe_category'),
+    path('__debug__/', include('debug_toolbar.urls')),
 ]

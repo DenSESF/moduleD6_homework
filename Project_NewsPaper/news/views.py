@@ -1,4 +1,6 @@
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+# flake8: noqa E501
+# from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import (
     ListView,
@@ -7,15 +9,14 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+# from django.views.defaults import page_not_found
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     PermissionRequiredMixin,
 )
 
-from typing import Any
-
-from whiteboard.models import Post, Category, Author
+from whiteboard.models import Post, Author, Category, SubscriberUser
 from .filters import NewsFilter
 from .forms import NewsForm
 
@@ -32,36 +33,56 @@ class NewsList(ListView):
     # ordering = ['-time']
     # перенес сортировку по убыванию даты в модели
     queryset = Post.objects.filter(type=Post.NEWS)
+    # queryset = Post.objects.filter(type=Post.NEWS).prefetch_related('category')
+    # queryset = Post.objects.prefetch_related('category').filter(type=Post.NEWS)
     paginate_by = 10
 
-    @staticmethod
-    def valid_category(cat_id):
-        return cat_id.isnumeric() and Category.objects.filter(pk=cat_id).exists()
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Новости'
-        context['news_count'] = self.get_queryset().count()
-        category = self.request.GET.get('cat')
-        if category is not None and self.valid_category(category):
-            context['all_news_radio'] = 'disabled'
-            context['current_category_id'] = self.request.GET.get('cat')
-        else:
+        # не нужно, использовал paginator.count в шаблоне
+        # context['news_count'] = self.get_queryset().count()
+        context['is_subscriber'] = False
+        # context['category_list'] = \
+        #     self.get_queryset().order_by('category').values_list('category', 'category__name').distinct()
+        context['category_list'] = Category.objects.values_list('id', 'name')
+        user = self.request.user
+        cat_id = self.request.GET.get('cat')
+        if cat_id is None:
             context['all_news_radio'] = 'checked'
-        context['is_not_author'] = not self.request.user.groups.filter(
-            name='authors'
-        ).exists()
+        elif cat_id.isnumeric():
+            context['all_news_radio'] = 'disabled'
+            context['current_category_id'] = int(cat_id)
+            if user.is_authenticated:
+            #     context['is_subscriber'] = \
+            #         self.get_queryset().filter(
+            #         category=cat_id,
+            #         category__subscribers=user
+            #     ).exists()
+                context['is_subscriber'] = \
+                    SubscriberUser.objects.filter(
+                        user=user,
+                        category=cat_id
+                    ).exists()
+        context['is_not_author'] = \
+            not self.request.user.groups.filter(name='authors').exists()
         return context
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
-        # if self.request.GET.__contains__('cat'):
-        if self.request.GET.get('cat') is not None:
-            category = self.request.GET.get('cat')
-            if self.valid_category(category):
-                return queryset.filter(category=category)
-        return queryset
-
+        cat_id = self.request.GET.get('cat')
+        if cat_id is None:
+            return queryset
+        if cat_id.isnumeric():
+            return queryset.filter(category=cat_id)
+        return queryset.none()
+    
+    # def get(self, request, *args, **kwargs):
+    #     cat_id = self.request.GET.get('cat')
+    #     if cat_id is None or cat_id.isnumeric():
+    #         return super().get(request, *args, **kwargs)
+    #     return page_not_found(request, ObjectDoesNotExist())
+        
 
 class NewsSearch(ListView):
     model = Post
@@ -70,15 +91,14 @@ class NewsSearch(ListView):
     # queryset = Post.objects.filter(type=Post.NEWS)
     paginate_by = 10
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Поиск новостей'
         context['filter'] = self.filterset
-        context['is_not_author'] = not self.request.user.groups.filter(
-            name='authors'
-        ).exists()
+        context['is_not_author'] = \
+            not self.request.user.groups.filter(name='authors').exists()
         return context
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
         self.filterset = NewsFilter(self.request.GET, queryset=queryset)
@@ -90,11 +110,11 @@ class NewsDetail(DetailView):
     template_name = 'news/news_detail.html'
     context_object_name = 'newsDetail'
 
-    # def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    # def get_context_data(self, **kwargs):
     #     context = super().get_context_data(**kwargs)
-        # context['full_name'] = self.object.author.user.get_full_name()
-        # Переопределил метод __str__ в модели
-        # return context
+    #     context['full_name'] = self.object.author.user.get_full_name()
+    #     Переопределил метод __str__ в модели
+    #     return context
 
 
 class NewsAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
@@ -104,7 +124,7 @@ class NewsAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     template_name = 'news/news_add.html'
     form_class = NewsForm
 
-    def get(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+    def get(self, request: HttpRequest, *args: str, **kwargs):
         if Author.objects.filter(user=request.user).exists():
             author = Author.objects.get(user=self.request.user)
             today_day = timezone.now().day
@@ -114,10 +134,11 @@ class NewsAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
                 type=Post.NEWS,
             ).count()
             if count_post == 3:
-                return HttpResponseRedirect(reverse_lazy('news:news_qty_exceeded'))
+                return \
+                    HttpResponseRedirect(reverse_lazy('news:news_qty_exced'))
         return super().get(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Добавить новость'
         return context
@@ -126,7 +147,7 @@ class NewsAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     #     initial = super(NewsAddView, self).get_initial(**kwargs)
     #     initial['type'] = Post.NEWS
     #     return initial
-    
+
     def form_valid(self, form):
         fields = form.save(commit=False)
         if Author.objects.filter(user=self.request.user).exists():
@@ -146,7 +167,7 @@ class NewsAddView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
         '''
         bg_notice_create_new_post(fields)
         return HttpResponseRedirect(fields.get_absolute_url())
-    
+
     # def post(self, request, *args, **kwargs):
     #     form = self.form_class(request.POST)
     #     if form.is_valid():
@@ -169,7 +190,7 @@ class NewsEditView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     template_name = 'news/news_add.html'
     form_class = NewsForm
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Редактировать новость'
         return context

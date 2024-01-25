@@ -1,9 +1,11 @@
+# flake8: noqa E501
 from django import template
 # from django.utils import timezone
 
 from whiteboard.models import Category
 
 register = template.Library()
+
 
 @register.simple_tag(takes_context=True)
 def url_replace(context, **kwargs):
@@ -22,17 +24,21 @@ def url_replace(context, **kwargs):
 #     return timezone.localtime(timezone.now())
 
 
-@register.simple_tag(takes_context=False)
-def get_list_category():
-    categorys = list(Category.objects.values_list('id', 'name'))
-    first_item_to_str = lambda x: tuple([str(x[0]), x[1]])
-    return list(map(first_item_to_str, categorys))
+# @register.simple_tag(takes_context=False)
+# def get_list_category():
+#     category_list = list(Category.objects.values_list('id', 'name'))
+#     return list(map(lambda x: tuple([str(x[0]), x[1]]), category_list))
 
 
-@register.simple_tag(takes_context=True)
-def is_subscriber(context, **kwargs):
-    cat_id = context['request'].GET.get('cat')
-    if cat_id is not None and cat_id.isnumeric():
-        user = context['request'].user
-        return Category.objects.get(pk=cat_id).subscribers.filter(username=user).exists()
-    return False
+# Неудачное решение перенес логику в NewsList
+# @register.simple_tag(takes_context=True)
+# def is_subscriber(context, **kwargs):
+#     user = context['request'].user
+#     cat_id = context['request'].GET.get('cat')
+#     if not user.is_authenticated or cat_id is None:
+#          return False
+#     news = context['object_list'].values(category=cat_id)
+#     if news.exists():
+#             # return Category.objects.get(pk=int(cat_id)).subscribers.filter(username=user).exists()
+#             return news.filter(category__user__username=user).exists()
+#     return False

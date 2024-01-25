@@ -1,3 +1,4 @@
+# flake8: noqa E501
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.template.loader import render_to_string
 
@@ -64,7 +65,8 @@ def greeting_new_user(sender, instance, created, *args, **kwargs):
             'email': email
         }
         body = f'Вы использовали для регистрации { email }.\n \
-            Для завершения регистрации дождитесь письма с верификацией электронной почты.'
+            Для завершения регистрации дождитесь письма с верификацией \
+            электронной почты.'
         html_context = render_to_string('./email/greeting_new_users.html', context)
         with get_connection(fail_silently=False) as connection:
             msg = EmailMultiAlternatives(

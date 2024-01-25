@@ -5,26 +5,25 @@
 {% block title %}{{ title }}{% endblock title %}
 
 {% block content %}
-    {% if news %}
+    {% if title == 'Новости' %}
         <h2><span class="fas fa-globe"></span> {{ title }}</h2>
-    {% elif news_search %}
+    {% elif title == 'Поиск новостей' %}
         <h2><span class="fas fa-search"></span> {{ title }}</h2>
     {% endif %}
     <hr>
     <div class="row justify-content-center">
         <div class="col-6 my-auto">
-            <p class="text-start fs-5 my-auto">Всего новостей: {% firstof news_count filter.qs|length "0" %}</p>
+            <p class="text-start fs-5 my-auto">Всего новостей: {% firstof paginator.count filter.qs|length "0" %}</p>
         </div>
         <div class="col-6 my-auto">
             <p class="text-end fs-5 my-auto">{% now 'd-m-Y H:i' %}</p>
         </div>
-        {% if news %}
+        {% if title == 'Новости' %}
             <div class="col-12 mt-auto mb-2">
                 <form class="text-start fs-6 my-auto" method="POST" action="{% url "subscrybe_category" %}">
                     {% csrf_token %}
                     <input id="allNews" type="radio" {{ all_news_radio }}>
                     <label for="allNews"><a href={% url "news:news" %}>Все новости</a></label>&nbsp;|
-                    {% get_list_category as category_list %}
                     {% for cat_id, cat_name in category_list %}
                         {% if current_category_id == cat_id %}
                             <input id="catChoise{{ cat_id }}" type="radio" name="cat" value="{{ cat_id }}" checked>
@@ -33,20 +32,18 @@
                         {% endif %}
                         <label for="catChoise{{ cat_id }}"><a href="?cat={{ cat_id }}">{{ cat_name }}</a></label>&nbsp;|
                     {% endfor %}
-                    {% is_subscriber as subscriber %}
                     {% if current_category_id and not user.is_authenticated %}
-                        {% comment %} <input class="btn btn-info btn-sm" type="submit" value="Подписаться"> {% endcomment %}
                         <span class="fs-6"><a href="{% url "account_login" %}">Войдите</a> для оформления подписки</span>
-                    {% elif current_category_id and user.is_authenticated and not subscriber %}
+                    {% elif news and current_category_id and user.is_authenticated and not is_subscriber %}
                         <input class="btn btn-info btn-sm" type="submit" value="Подписаться">
-                    {% elif current_category_id and user.is_authenticated and subscriber %}
+                    {% elif current_category_id and user.is_authenticated and is_subscriber %}
                         <span class='text-success fs-6'>Вы уже подписаны</span>
                     {% endif %}
                 </form>
         </div>
         {% endif %}
     </div>
-    {% if not news %}
+    {% if not news and news_search %}
         <form class="row row-cols-auto my-2" method="GET">
             {% comment %} {{ filter.form }} {% endcomment %}
             {% for field in filter.form %}
@@ -62,7 +59,7 @@
                 <th scope="col">Заголовок</th>
                 <th scope="col">Дата</th>
                 <th scope="col">Содержимое</th>
-                <th scope="col">Действия</th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
